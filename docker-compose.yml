@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+  local:
+    container_name: postgres14
+    image: postgres:14.1-alpine
+    env_file: .env
+    environment:
+            WWWUSER: '${WWWUSER}'
+    ports:
+      - "0.0.0.0:${POSTGRESQL_PORT_CP_LOCAL}:5432"
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      backend:
+        aliases:
+          - ${POSTGRESQL_HOST_ALIAS_CP_LOCAL}
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    env_file: .env
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - "0.0.0.0:${POSTGRESQL_PORT_CP_PGADMIN}:80"
+    depends_on:
+      - "local"
+    restart: unless-stopped
+    networks:
+      backend:
+        aliases:
+          - ${POSTGRESQL_HOST_ALIAS_CP_PGADMIN}
+
+volumes:
+  pg-data:
+    driver: local
+  pgadmin:
+
+networks:
+  backend:
+    name: network-docker-local
+    external: true
